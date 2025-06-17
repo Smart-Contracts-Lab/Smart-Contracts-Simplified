@@ -1,6 +1,6 @@
 # Smart Contracts Simplified
 
-This repository contains a collection of smart contract projects, each focusing on different aspects of blockchain development.
+This repository contains a collection of smart contract projects, each offering a demo on different aspects of blockchain development.
 
 ## Project Structure
 
