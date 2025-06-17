@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+/build/
+/cache/
+/artifacts/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Coverage directory
+coverage/
+coverage.json
+
+# Debug logs
+*.log
+
+# Local development
+.DS_Store
+.idea/
+.vscode/
+
+# Hardhat files
+cache/
+artifacts/
+
+# OpenZeppelin
+.openzeppelin/
+
+# Truffle
+.truffle-*
+
+# Foundry
+out/
+cache/ 
