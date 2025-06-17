@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Hardhat build artifacts
+artifacts/
+cache/
+
+# Coverage reports
+coverage/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# macOS system files
+.DS_Store
+
+# TypeScript build info
+*.tsbuildinfo

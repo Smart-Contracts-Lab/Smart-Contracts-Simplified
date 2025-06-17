@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/style.css">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <link href="https://fonts.cdnfonts.com/css/futuristic" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const container = document.querySelector('.container');
+                const scrollPos = localStorage.getItem('scrollPos');
+                if (scrollPos) {
+                    container.scrollTop = parseInt(scrollPos);
+                    localStorage.removeItem('scrollPos');
+                }
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', function() {
+                        localStorage.setItem('scrollPos', container.scrollTop);
+                    });
+                });
+                updateButtonStates(<%= currentStep %>);
+            });
+
+            function updateButtonStates(step) {
+                const forms = {
+                    1: document.getElementById('deploy-contract-form'),
+                    2: document.getElementById('event-info-form'),
+                    3: document.getElementById('buy-ticket-form'),
+                    4: document.getElementById('check-remaining-form'),
+                    5: document.getElementById('organizer-tickets-form'),
+                    6: document.getElementById('check-in-form'), 
+                    7: document.getElementById('withdraw-form'),
+                };
+                Object.values(forms).forEach(f => {
+                    if (f) {
+                        const btn = f.querySelector('button');
+                        btn.disabled = true;
+                        btn.classList.add('button-disabled');
+                    }
+                });
+                const currentForm = forms[step];
+                if (currentForm) {
+                    const btn = currentForm.querySelector('button');
+                    btn.disabled = false;
+                    btn.classList.remove('button-disabled');
+                }
+            }
+        </script>
+         <% if (alert != null) { %>
+            <script>
+                alert("<%= alert %>");
+            </script>
+        <% } %>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Ticket Edge</h1>
+        </div>
+        <div class="container">
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>1. Organizer Deploys Contract</h2>
+                </div>
+                <span id="instructions-1">
+                    As the organizer, your very first action is to deploy the EventTicketNFT contract. In one transaction you give 
+                    the chain all the immutable details of your event: its name, the date (as a UNIX timestamp), how much each ticket
+                    costs in wei, and the maximum supply of tickets you'll ever sell. Under the hood, the constructor calls into
+                    OpenZeppelin's ERC-721 machinery to register your token's name (“EventTicket”) and symbol (“ETIX”), and it wires
+                    up your wallet as the sole owner—the only address allowed to mint VIP passes or withdraw funds later.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    constructor(
+        string memory _eventName,
+        uint256 _eventDate,
+        uint256 _ticketPrice,
+        uint256 _maxSupply
+    )
+        ERC721("EventTicket", "ETIX")
+        Ownable()
+    {
+        require(_maxSupply > 0, "maxSupply = 0");
+        eventName   = _eventName;
+        eventDate   = _eventDate;
+        ticketPrice = _ticketPrice;
+        maxSupply   = _maxSupply;
+    }                        
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Please fill in the fields with a custom event name, an event date and time, a ticket price between 0.01 and 0.1 ETH and a maximum supply of at least
+                    200 units. These will appear on your NFT, so be creative :). When you are done, go ahead and click on "Deploy Contract" to create your event.
+                </span>
+                <div class="content-bullet">
+                    <% if (!deployed) { %>
+                        <form class="section-form" id="deploy-contract-form" action="/deploy-contract" method="post">
+                            <input id="address-input" type="text" name="eventName" placeholder="Event name" required>
+                            <input id="address-input" type="datetime-local" name="eventDate" placeholder="Event date and time" required>
+                            <input id="address-input" type="number" name="ticketPrice" placeholder="Ticket price (ETH)" min="0" step="0.01" required>
+                            <input id="address-input" type="number" name="maxSupply" placeholder="Tickets max supply (units)" required>
+                            <button id="deploy-contract-button" onclick="showDeployAnimation()"><i class="fa-solid fa-file-contract" style="padding-right:5%;"></i> Deploy Contrat</button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Deployed</button>
+                    <% } %>
+                    <div id="deploy-animation" class="animation-container hidden">
+                        <div class="fountain-container">
+                            <i class="fa-solid fa-file-contract contract"></i>
+                        </div>
+                        <p>Deploying smart contract...</p>
+                    </div>                   
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>2. Check Event Details</h2>
+                </div>
+                <span id="instructions-1">
+                    The variables eventName, eventDate, ticketPrice and maxSupply live on-chain as public reads, and can therefore be retrieved to display
+                    the event information in the dApp.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    string public eventName;
+    uint256 public eventDate;
+    uint256 public immutable maxSupply;
+    uint256 public immutable ticketPrice;
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on "Get Event Info" to see the infromation about the event.
+                </span>
+                <div class="content-bullet">
+                    <% if (eventInfo === null) { %>
+                        <form class="section-form" id="event-info-form" action="/event-info" method="post">
+                            <button id="event-info-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Get Event Info </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-balance">
+                            <h4>Event Info:</h4>
+                            <ul id="lottery-info-list">
+                                <li>Name: <%= eventInfo.eventName %></li>
+                                <li>Date: <%= eventInfo.eventDate %></li>
+                                <li>Price: <%= eventInfo.ticketPrice %> ETH</li>
+                                <li>Max participants: <%= eventInfo.maxSupply %></li>
+                            </ul>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>3. Buying Tickets</h2>
+                </div>
+                <span id="instructions-1">
+                    When somebody likes your event and wants to participate, the buyTicket() function can be called with the 
+                    quantity of tickets that they are willing to buy and the custom uris that are going to be set for each NFT. First
+                    the function checks that the correct quantity and value was sent, that the tickets aren't sold out and that the uris match, then
+                    it mints an NFT for every ticket acquired directly to the buyer's wallet, which can ultimately transfer them to his friends' wallets.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function buyTicket(uint256 quantity, string[] calldata uris) external payable {
+        require(quantity > 0, "quantity 0");
+        require(_nextTokenId + quantity <= maxSupply, "Sold out");
+        require(msg.value == ticketPrice * quantity, "Wrong payment");
+        require(uris.length == quantity, "URIs length mismatch");
+
+        for (uint256 i = 0; i < quantity; i++) {
+            uint256 tid = _nextTokenId;
+            _safeMint(msg.sender, tid);
+            _setTokenURI(tid, uris[i]);
+            emit TicketPurchased(msg.sender, tid);
+            _nextTokenId++;
+        }
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Let's buy some tickets! Enter a quantity of tickets that you wish to buy and the name of all the participants (including you), and
+                    click on "Buy Tickets"! <br><br>
+                    <b>Remember: Make sure that you have sufficient HolETH to buy the tickets, or the transaction will revert.</b>
+                </span>
+                <div class="content-bullet">
+                    <% if (ticketMinted === false) { %>
+                        <form class="section-form" id="buy-ticket-form" action="buy-tickets" method="post">
+                            <div class="quantity-dropdown">
+                                <label for="quantity-select">How many tickets do you wish to buy?</label>
+                                <select id="quantity-select" name="quantity">
+                                    <option value="">-- Please choose an option --</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+                            <div class="guests-inputs">
+        
+                            </div>
+                            <button id="buy-ticket-button" style="display:none;" onclick="showBuyTicketAnimation()"><i class="fa-brands fa-ethereum" style="padding-right:5%;"></i> Buy Ticket </button>
+                            <button id="buy-tickets-button" style="display:none;" onclick="showBuyTicketAnimation()"><i class="fa-brands fa-ethereum" style="padding-right:5%;"></i> Buy Tickets </button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Tickets Minted</button>
+                    <% } %>
+                    <div class="buy-ticket-animation hidden">
+                        <div id="step1" class="step-bta">
+                            <i class="fa-brands fa-ethereum icon-bta"></i>
+                            <div class="text-bta">Funding the Transaction...</div>
+                        </div>
+                        <div id="step2" class="step-bta">
+                            <i class="fa-solid fa-image-portrait icon-bta"></i>
+                            <div class="text-bta">Creating NFT...</div>
+                        </div>
+                        <div id="step3" class="step-bta">
+                            <i class="fa-solid fa-ticket icon-bta"></i>
+                            <div class="text-bta">Transferring Ticket...</div>
+                        </div>
+                        <div id="step4" class="step-bta">
+                            <div class="text-bta">Transaction completed</div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>4. Check Remaining Tickets</h2>
+                </div>
+                <span id="instructions-1">
+                    The event organizer wants to buy a ticket for a guest of his, so he checks if there are tickets remaining by calling ticketsRemaining().
+                    If there are tickets available he can call the organizerMint() function that is callable only by him to mint free tokens. After checking the availability
+                    of tickets and that the right variables were given, the function mints a token to the specified address.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function ticketsRemaining() external view returns (uint256) {
+        return maxSupply - _nextTokenId;
+    }
+
+    function organizerMint(address to, uint256 quantity, string[] calldata uris) external onlyOwner {
+        require(quantity > 0, "quantity 0");
+        require(_nextTokenId + quantity <= maxSupply, "Exceeds supply");
+        require(uris.length == quantity, "URIs length mismatch");
+
+        for (uint256 i = 0; i < quantity; i++) {
+            uint256 tid = _nextTokenId;
+            _safeMint(to, tid);
+            _setTokenURI(tid, uris[i]);
+            emit TicketPurchased(to, tid);
+            _nextTokenId++;
+        }
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Go ahead and click on "Check availability" to see if there are tickets left.
+                </span>
+                <div class="content-bullet">
+                    <% if (checkRemaining === null) { %>
+                        <form class="section-form" id="check-remaining-form" action="/check-remaining" method="post">
+                            <button id="check-remaining-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check availability </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-info">
+                            Tickets remaining:     <b><%= checkRemaining %></b>
+                        </div>
+                        <span id="instructions-2">
+                            Now let's mint a ticket for our guest, the guest's wallet address is already given. Insert the full name of the 
+                            guest and click on "Mint Ticket" to create a ticket for our guest.
+                        </span>
+                        <% if (organizerMinted === false) { %>
+                            <form class="section-form" id="organizer-tickets-form" action="/organizer-tickets" method="post">
+                                <div class="guests-inputs">
+                                    <input class="participant-name-input" name="guestName" placeholder="Insert participant's full name">
+                                    <input class="participant-name-input" name="guestAddress" value="0x44e0de735e4CAE3DeDE32A0527e8729468AC43f4" readonly>
+                                </div>
+                                <button id="organizer-ticket-button" onclick="showOrganizerMintAnimation()"><i class="fa-brands fa-ethereum" style="padding-right:5%;"></i> Mint Ticket </button>
+                            </form>
+                        <% } else { %>
+                            <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Ticket Minted</button>
+                            <span id="instructions-1">
+                                Notice how the remaining tickets counter decreased by one, this gives us a hint that the transaction was successful.
+                            </span>
+                        <% } %>
+                    <% } %>
+                    <div class="organizer-mint-animation hidden">
+                        <div id="step1" class="step-oma">
+                            <i class="fa-solid fa-image-portrait icon-oma"></i>
+                            <div class="text-oma">Creating NFT...</div>
+                        </div>
+                        <div id="step2" class="step-oma">
+                            <i class="fa-solid fa-ticket icon-oma"></i>
+                            <div class="text-oma">Transferring Ticket...</div>
+                        </div>
+                        <div id="step3" class="step-oma">
+                            <div class="text-oma">Transaction completed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>5. Check-In</h2>
+                </div>
+                <span id="instructions-1">
+                    Once you head out to the event and get to the entrance, you can esily check-in by calling checkIn() with your tokenId, a function that checks
+                    if your are the owner of the NFT and if you didn't already check-in, then it updates the checkedIn mapping.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function checkIn(uint256 tokenId) external {
+        require(ownerOf(tokenId) == msg.sender, "Not ticket owner");
+        require(!checkedIn[tokenId], "Already checked-in");
+
+        checkedIn[tokenId] = true;
+        emit CheckedIn(msg.sender, tokenId);
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on "Check-In" to enter the venue, if the function call is successful, you are admitted to the event!
+                </span>
+                <div class="content-bullet">
+                    <% if (checkedIn === false) { %>
+                        <form class="section-form" id="check-in-form" action="/check-in" method="post">
+                            <% if (tokenIds != null) { %>
+                                <input type="hidden" name="tokenId" value="<%= tokenIds[0] %>">
+                            <% } %>
+                            <button id="check-in-button"><i class="fa-solid fa-check-to-slot" style="padding-right:5%;"></i> Check-In </button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Checked-In</button>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>6. Withdraw Funds</h2>
+                </div>
+                <span id="instructions-1">
+                    The event organizer can withdraw the funds collected with the ticket sale whenever he wants (although he might wait if the contract
+                    has return policy functions) by calling the withdraw() function.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function withdraw() external onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Go ahead and click on "Withdraw", to transfer the funds to the event organizer (you in this case)!
+                </span>
+                <div class="content-bullet">
+                    <% if (withdrawn === false) { %>
+                        <form class="section-form" id="withdraw-form" action="/withdraw" method="post">
+                            <button id="withdraw-button"><i class="fa-solid fa-check-to-slot" style="padding-right:5%;"></i> Withdraw </button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Funds Withdrawn</button>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        Full Smart Contract
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The EventTicketNFT contract lets an organizer mint and sell ERC-721 “ticket” NFTs for a single event up to a
+                    fixed supply at a fixed price. When deployed, the event's name, date, ticket price, and maximum supply are set. 
+                    Anyone can call buyTicket, paying exactly (ticketPrice x quantity), to mint that many NFTs, each with its own metadata 
+                    URI, until the supply cap is reached. The contract tracks ownership and emits a TicketPurchased event for each mint.
+                    Ticket holders can then check-in at the event by calling checkIn(tokenId), which marks their token as used and emits
+                    a CheckedIn event (preventing double check-ins). The owner may also pre-mint tickets to any address via organizerMint,
+                    withdraw collected funds with withdraw, and view remaining tickets, check-in status, or core event info through read-only getters.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.20;
+
+    import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+    import "@openzeppelin/contracts/access/Ownable.sol";
+
+    contract EventTicketNFT is ERC721URIStorage, Ownable {
+        uint256 public immutable maxSupply;
+        uint256 public immutable ticketPrice;
+        string  public eventName;
+        uint256 public eventDate;
+        uint256 private _nextTokenId = 1;
+        mapping(uint256 => bool) public checkedIn;
+
+        event TicketPurchased(address indexed buyer, uint256 indexed tokenId);
+        event CheckedIn(address indexed attendee, uint256 indexed tokenId);
+
+        constructor(
+            string memory _eventName,
+            uint256 _eventDate,
+            uint256 _ticketPrice,
+            uint256 _maxSupply
+        )
+            ERC721("EventTicket", "ETIX")
+            Ownable(msg.sender)
+        {
+            require(_maxSupply > 0, "maxSupply = 0");
+
+            eventName   = _eventName;
+            eventDate   = _eventDate;
+            ticketPrice = _ticketPrice;
+            maxSupply   = _maxSupply;
+        }
+
+        function buyTicket(uint256 quantity, string[] calldata uris) external payable {
+            require(quantity > 0, "quantity 0");
+            require(_nextTokenId + quantity <= maxSupply, "Sold out");
+            require(msg.value == ticketPrice * quantity, "Wrong payment");
+            require(uris.length == quantity, "URIs length mismatch");
+
+            for (uint256 i = 0; i < quantity; i++) {
+                uint256 tid = _nextTokenId;
+                _safeMint(msg.sender, tid);
+                _setTokenURI(tid, uris[i]);
+                emit TicketPurchased(msg.sender, tid);
+                _nextTokenId++;
+            }
+        }
+
+        function checkIn(uint256 tokenId) external {
+            require(ownerOf(tokenId) == msg.sender, "Not ticket owner");
+            require(!checkedIn[tokenId], "Already checked-in");
+
+            checkedIn[tokenId] = true;
+            emit CheckedIn(msg.sender, tokenId);
+        }
+
+        function organizerMint(address to, uint256 quantity, string[] calldata uris) external onlyOwner {
+            require(quantity > 0, "quantity 0");
+            require(_nextTokenId + quantity <= maxSupply, "Exceeds supply");
+            require(uris.length == quantity, "URIs length mismatch");
+
+            for (uint256 i = 0; i < quantity; i++) {
+                uint256 tid = _nextTokenId;
+                _safeMint(to, tid);
+                _setTokenURI(tid, uris[i]);
+                emit TicketPurchased(to, tid);
+                _nextTokenId++;
+            }
+        }
+
+        function withdraw() external onlyOwner {
+            payable(owner()).transfer(address(this).balance);
+        }
+
+        function ticketsRemaining() external view returns (uint256) {
+            return maxSupply - _nextTokenId;
+        }
+
+        function isCheckedIn(uint256 tokenId) external view returns (bool) {
+            return checkedIn[tokenId];
+        }
+
+        function getInfo() external view returns (string memory _eventName, uint256 _eventDate, uint256 _ticketPrice, uint256 _maxSupply) {
+            return (eventName, eventDate, ticketPrice, maxSupply);
+        }
+    }
+                    </code></pre>
+                </div>
+            </div>
+
+        </div>
+        <div class="transfer-nft-animation hidden">
+            <h6>
+                Adding NFT to MetaMask Wallet ...
+            </h6>
+            <span>
+                A metamask prompt will pop-up shortly, please wait until the metamask window opens, then scroll down and click on "Add nft".
+            </span>
+            <div id="nft-animation">
+                <div id="nftCard" class="nft-card"></div>
+                <div id="walletIcon" class="wallet-icon"></div>
+                <svg id="checkMark" class="checkmark" viewBox="0 0 52 52">
+                    <circle cx="26" cy="26" r="25" fill="none" stroke="#FF5C16" stroke-width="4" />
+                    <path d="M14 27l7 7 16-16" fill="none" stroke="#FF5C16" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+        </div>
+        <canvas id="stageCanvas"></canvas>
+        <script>
+            const canvas = document.getElementById("stageCanvas");
+            const ctx    = canvas.getContext("2d");
+
+            let width, height;
+            function resize() {
+                width  = canvas.width  = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener("resize", resize);
+            resize();
+
+            function drawTruss() {
+                const outerRadius = width * 0.3;
+                const innerRadius = width * 0.27;
+                const centerX     = width * 0.5;
+                const centerY     = height * 0.58;
+                const supportW    = 20;
+
+                ctx.fillStyle = "#444";
+                ctx.fillRect(centerX - outerRadius - supportW/2, centerY, supportW, height * 0.6);
+                ctx.fillRect(centerX + outerRadius - supportW/2, centerY, supportW, height * 0.6);
+
+                ctx.lineWidth   = 16;
+                ctx.strokeStyle = "#555";
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, outerRadius, Math.PI, 2 * Math.PI);
+                ctx.stroke();
+
+                ctx.lineWidth   = 12;
+                ctx.strokeStyle = "#666";
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, innerRadius, Math.PI, 2 * Math.PI);
+                ctx.stroke();
+
+                ctx.lineWidth   = 2;
+                ctx.strokeStyle = "#777";
+                for (let i = 0; i <= 12; i++) {
+                    const θ  = Math.PI + (i / 12) * Math.PI;
+                    const x1 = centerX + outerRadius * Math.cos(θ);
+                    const y1 = centerY + outerRadius * Math.sin(θ);
+                    const x2 = centerX + (outerRadius - 40) * Math.cos(θ);
+                    const y2 = centerY + (outerRadius - 40) * Math.sin(θ);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            }
+
+            function drawStageFloor() {
+                ctx.fillStyle = "#222";
+                ctx.fillRect(0, height * 0.6, width, height * 0.4);
+                ctx.fillStyle = "#333";
+                ctx.fillRect(0, height * 0.58, width, height * 0.02);
+            }
+
+            const numLights  = 6;
+            const lights     = [];
+            const stageY     = height * 0.58;
+            const beamLength = height * 0.8;
+            const beamWidth  = 200;
+            const maxAngle   = Math.PI / 12;
+            const hueStart = 25;
+            const hueEnd   = 45;
+
+            for (let i = 0; i < numLights; i++) {
+                const x = (i + 0.5) * (width / numLights);
+                const hue        = hueStart + (i / numLights) * (hueEnd - hueStart);
+                const saturation = 100;
+                const lightness  = 40 + (i / numLights) * 30;
+                lights.push({
+                    x:     x,
+                    y:     stageY,
+                    color: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+                    speed: 0.0005 + Math.random() * 0.0007,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            function drawLight(light, time) {
+                const angle = Math.sin(time * light.speed + light.phase) * maxAngle;
+                const dx    = Math.sin(angle), dy = -Math.cos(angle);
+                const px    = -dy, py = dx;
+
+                const tipX   = light.x + dx * beamLength;
+                const tipY   = light.y + dy * beamLength;
+                const leftX  = tipX + px * (beamWidth/2);
+                const leftY  = tipY + py * (beamWidth/2);
+                const rightX = tipX - px * (beamWidth/2);
+                const rightY = tipY - py * (beamWidth/2);
+
+                ctx.globalAlpha = 0.15;
+                ctx.fillStyle   = light.color;
+                ctx.beginPath();
+                ctx.moveTo(light.x, light.y);
+                ctx.lineTo(leftX, leftY);
+                ctx.lineTo(rightX, rightY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                ctx.beginPath();
+                ctx.arc(light.x, light.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = light.color;
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth   = 1;
+                ctx.stroke();
+            }
+
+            function animate(ts) {
+                ctx.clearRect(0, 0, width, height);
+
+                drawTruss();
+                drawStageFloor();
+
+                for (const light of lights) {
+                    drawLight(light, ts);
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+        </script>
+        <% if (ticketMinted) { %>
+            <script>
+                function startNftAnimation() {
+                    const container = document.getElementById('nft-animation');
+                    const card = document.getElementById('nftCard');
+                    const wallet = document.getElementById('walletIcon');
+                    const check = document.getElementById('checkMark');
+
+                    container.classList.add('active');
+
+                    // Kick off the individual pieces
+                    setTimeout(() => card.classList.add('animate'), 50);
+                    setTimeout(() => wallet.classList.add('animate'), 1800);
+                    setTimeout(() => check.classList.add('animate'), 2000);
+
+                    // Clean up and reset for the next run
+                    setTimeout(() => {
+                        container.classList.remove('active');
+                        card.classList.remove('animate');
+                        wallet.classList.remove('animate');
+                        check.classList.remove('animate');
+                    }, 4000);
+                }
+
+                async function switchToHolesky() {
+                    const chainId = '0x4268';
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId,
+                                    chainName: 'Holesky',
+                                    nativeCurrency: {
+                                        name: 'Holesky Ether',
+                                        symbol: 'ETH',
+                                        decimals: 18
+                                    },
+                                    rpcUrls: ['https://ethereum-holesky.publicnode.com'],
+                                    blockExplorerUrls: ['https://holesky.beaconcha.in']
+                                }]
+                            });
+                        } else {
+                            console.error('Failed to switch to Holesky:', switchError);
+                            throw switchError;
+                        }
+                    }
+                }
+            
+                async function addNFTToMetaMask(contract, tokenId, imageUrl) {
+                    try {
+                        const wasAdded = await window.ethereum.request({
+                            method: 'wallet_watchAsset',
+                            params: {
+                                type: 'ERC721',
+                                options: {
+                                    address: contract,
+                                    tokenId,
+                                    symbol: 'ETIX',
+                                    image: imageUrl
+                                }
+                            }
+                        });
+                        console.log(
+                            wasAdded
+                            ? `Token ${tokenId} added!`
+                            : `Token ${tokenId} not added.`
+                        );
+                    } catch (err) {
+                        console.error('Error adding NFT to MetaMask:', err);
+                    }
+                }
+            
+                document.addEventListener('DOMContentLoaded', () => {
+                    (async () => {
+                        const transferAnimation = document.querySelector('.transfer-nft-animation');
+                        const container = document.querySelector('.container');
+                        const canvas = document.getElementById('stageCanvas');
+                        transferAnimation.classList.remove("hidden");
+                        container.classList.add("unclickable");
+                        container.style.filter = "blur(8px)";
+                        canvas.style.filter = "blur(8px)";
+                        startNftAnimation();
+
+                        try {
+                            await switchToHolesky();
+                        } catch (e) {
+                            return;
+                        }
+                
+                        const contract = '<%= contractAddress %>';
+                        const ids      = <%- JSON.stringify(tokenIds) %>;
+                        const uris     = <%- JSON.stringify(
+                            metadataUris.map(uri =>
+                                uri.replace('/ipfs/', 'https://gateway.pinata.cloud/ipfs/')
+                            )
+                        ) %>;
+
+                        console.log('🔍 Adding NFTs to MetaMask with', { contract, ids });
+                
+                        const addPromises = ids.map((id, i) =>
+                            addNFTToMetaMask(contract, id, uris[i])
+                        );
+
+                        try {
+                            await Promise.all(addPromises);
+                        } catch (err) {
+                            console.error("One of the NFT adds failed or was rejected", err);
+                        } finally {
+                            transferAnimation.classList.add("hidden");
+                            container.classList.remove("unclickable");
+                            container.style.filter = "none";
+                            canvas.style.filter = "none";
+                        }
+                    })();
+                })
+            </script>
+        <% } %>                      
+        <script src="script.js"></script>
+    </body>
+</html>

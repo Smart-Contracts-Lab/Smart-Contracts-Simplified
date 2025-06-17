@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/style.css">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <link href="https://fonts.cdnfonts.com/css/the-farm" rel="stylesheet">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const container = document.querySelector('.container');
+                
+                const scrollPos = localStorage.getItem('scrollPos');
+                if (scrollPos) {
+                    container.scrollTop = parseInt(scrollPos);
+                    localStorage.removeItem('scrollPos');
+                }
+
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', function() {
+                        localStorage.setItem('scrollPos', container.scrollTop);
+                    });
+                });
+
+                updateButtonStates(<%= currentStep %>);
+            });
+
+            function updateButtonStates(currentStep) {
+                const deployForm = document.getElementById('deploy-contract-form');
+                const checkBalanceForm = document.querySelector('form[action="/check-balance"]');
+                const purchasePolicyForm = document.querySelector('form[action="/purchase-policy"]');
+                const checkPremiumsForm = document.querySelector('form[action="/check-premiums"]');
+                const processRainfallCase1Form = document.querySelector('form[action="/process-rainfall-case1"]');
+                const checkBalanceAfter1Form = document.querySelector('form[action="/check-balance-after1"]');
+                const processRainfallCase2Form = document.querySelector('form[action="/process-rainfall-case2"]');
+                const checkBalanceAfter2Form = document.querySelector('form[action="/check-balance-after2"]');
+                const withdrawForm = document.querySelector('form[action="/withdraw-funds"]');
+                const checkBalanceAfter3Form = document.querySelector('form[action="/check-balance-after3"]');
+
+                [deployForm, checkBalanceForm, purchasePolicyForm, checkPremiumsForm, processRainfallCase1Form, checkBalanceAfter1Form, processRainfallCase2Form, checkBalanceAfter2Form, withdrawForm, checkBalanceAfter3Form].forEach(form => {
+                    if (form) {
+                        const button = form.querySelector('button');
+                        if (button) {
+                            button.disabled = true;
+                            button.classList.add('button-disabled');
+                        }
+                    }
+                });
+
+                switch(currentStep) {
+                    case 1:
+                        if (deployForm) {
+                            const button = deployForm.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 2:
+                        if (checkBalanceForm) {
+                            const button = checkBalanceForm.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 3:
+                        if (purchasePolicyForm) {
+                            const button = purchasePolicyForm.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 4:
+                        if (checkPremiumsForm) {
+                            const button = checkPremiumsForm.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 5:
+                        if (processRainfallCase1Form) {
+                            const button = processRainfallCase1Form.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 6:
+                        if (checkBalanceAfter1Form) {
+                            const button = checkBalanceAfter1Form.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 7:
+                        if (processRainfallCase2Form) {
+                            const button = processRainfallCase2Form.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 8:
+                        if (checkBalanceAfter2Form) {
+                            const button = checkBalanceAfter2Form.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 9:
+                        if (withdrawForm) {
+                            const button = withdrawForm.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                    case 10:
+                        if (checkBalanceAfter3Form) {
+                            const button = checkBalanceAfter3Form.querySelector('button');
+                            if (button) {
+                                button.disabled = false;
+                                button.classList.remove('button-disabled');
+                            }
+                        }
+                        break;
+                }
+            }
+        </script>
+        <% if (alertMessage != "none") { %>
+            <script>
+                alert("<%= alertMessage %>");
+            </script>
+        <% } %>
+    </head>
+    <body>
+        <div class="header">
+            <h1>
+                Oraclimate
+            </h1>
+        </div>
+        <div class="container">
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        1. Contract initialization
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The contract is deployed by the insurer, setting up the rainfall threshold, the payout amount, the premium to be paid and the duration of a term.
+                    These define how the policy works and how much the farmer will receive in case of low rainfall.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    constructor(
+        uint256 _threshold,
+        uint256 _premium,
+        uint256 _duration
+    ) payable {
+        require(msg.value > 0, "Insurer must fund payout amount");
+
+        insurer = msg.sender;
+        rainfallThreshold = _threshold;
+        premium = _premium;
+        payoutAmount = msg.value;
+        policyDuration = _duration;
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Insert a rainfall threshold of 10mm, a desired payout amount between 1-100 ETH, a premium of 0.1 ETH and a policy duration of at least 30 days.
+                    Now we are all set, you can click on "Deploy contract"!
+                </span>
+                <div class="content-bullet">
+                    <% if (deployed == false) { %>
+                        <form id="deploy-contract-form" action="/deploy-contract" method="post">
+                            <input id="deploy-contract-input" type="text" name="rainfallThereshold" placeholder="Insert Rainfall Threshold (mm)..." required>
+                            <input id="deploy-contract-input" type="text" name="payoutAmount" placeholder="Insert payout amount (ETH)..." required>
+                            <input id="deploy-contract-input" type="text" name="premiumAmount" placeholder="Insert premium (ETH)..." required>
+                            <input id="deploy-contract-input" type="text" name="policyDuration" placeholder="Insert policy duration (days)..." required>
+                            <button type="submit" id="deploy-contract-button" onclick="deployAnimation()"><i class="fa-solid fa-file-signature" style="padding-right:5%;"></i> Deploy contract</button>
+                        </form>
+                    <% } else { %>
+                        <button type="submit" id="deployed-contract-button"><i class="fa-solid fa-check" style="padding-right:5%;" deactivated></i> Deployed</button>
+                    <% } %>
+                    <div id="deploy-animation" class="animation-container hidden">
+                        <div class="blockchain">
+                            <div class="block" style="--i:0"></div>
+                            <div class="block" style="--i:1"></div>
+                            <div class="block" style="--i:2"></div>
+                            <div class="block" style="--i:3"></div>
+                            <div class="tractor"><i class="fa-solid fa-tractor"></i></div>
+                        </div>
+                        <p>Deploying smart contract...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        2. Checking the funds
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The farmer can call a function to check the contract balance, allowing him to verify if the funds where deposited by the insurer.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function getContractBalance() external view returns (uint256) {
+        return address(this).balance;
+    }                       
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on "Check balance" to verify the funds where transferred to the contract. This creates transparency in the transaction.
+                </span>
+                <div class="content-bullet">
+                    <% if (farmerCheck == "none") { %>
+                        <form id="deploy-contract-form" action="/check-balance" method="post">
+                            <button type="submit" id="deploy-contract-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check balance </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-balance">
+                            <h4>Contract Balance: <%= farmerCheck %> <i class="fa-brands fa-ethereum"></i></h4>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        3. Purchasing the Policy
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The farmer can activate the insurance policy by paying the policy premium set by the insurer.
+                    This initiates the policy and binds the contract to the farmer's address. The function first checks if the 
+                    farmer already has an active policy and if the required funds are transferred, then it saves the farmer's address 
+                    and registers the start of the policy and the piad premium.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function purchasePolicy() external payable onlyFarmer {
+        require(farmer == address(0), "Policy already purchased");
+        require(msg.value == premium, "Incorrect premium amount");
+
+        farmer = msg.sender;
+        policyStart = block.timestamp;
+        totalPremiumsPaid += msg.value;
+    }                       
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    The premium value is already set to the correct amount. Go ahead and click on "Purchase Policy"!
+                </span>
+                <div class="content-bullet">
+                    <% if (policyPurchased == false) { %>
+                        <form id="purchase-policy-form" action="/purchase-policy" method="post">
+                            <input id="deploy-contract-input" type="number" name="premiumAmount" value="0.1" readonly>
+                            <button type="submit" id="deploy-contract-button" onclick="purchaseAnimation()"><i class="fa-solid fa-cart-shopping" style="padding-right:5%;"></i> Purchase Policy</button>
+                        </form>
+                    <% } else { %>
+                        <button type="submit" id="deployed-contract-button"><i class="fa-solid fa-bag-shopping" style="padding-right:5%;" deactivated></i> Purchased</button>
+                    <% } %>
+                    <div id="purchase-animation" class="hidden">
+                        <div class="cart-container">
+                            <div class="cart-icon">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <div class="wind-lines">
+                                    <div class="wind-line"></div>
+                                    <div class="wind-line"></div>
+                                    <div class="wind-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        4. Checking the premium
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The insurer can call a function to check the cumulated premiums deposited by the farmer.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function getTotalPremiumsPaid() external view returns (uint256) {
+        return totalPremiumsPaid;
+    }                      
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on "Check premiums" to verify the funds where transferred to the contract. This creates transparency in the transaction.
+                </span>
+                <div class="content-bullet">
+                    <% if (insurerCheck == "none") { %>
+                        <form id="deploy-contract-form" action="/check-premiums" method="post">
+                            <button type="submit" id="deploy-contract-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check premiums </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-balance">
+                            <h4>Total Premiums paid: <%= insurerCheck %> <i class="fa-brands fa-ethereum"></i></h4>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        5. Requesting Rainfall Data
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The insurer can now initiate a Chainlink request to fetch real-time rainfall data from an external weather API.
+                    This is where the oracle comes into play, connecting off-chain weather data to the smart contract. For demo purposes,
+                    our function will simulate the oracle request and response. In a real-world situation, the call can be automated to process
+                    at the end of each term, so that the insurer doesn't have to constantly call it.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function setRainfall(uint256 _rainfall) external onlyInsurer policyIsActive {
+        require(!claimProcessed, "Claim already processed");
+
+        rainfallReceived = _rainfall;
+        claimProcessed = true;
+
+        if (_rainfall < rainfallThreshold) {
+            payable(farmer).transfer(payoutAmount);
+        }
+    }                      
+                    </code></pre>
+                </div>
+                <% if (caseTwoActive == false) { %>
+                    <div class="content-bullet">
+                        <% if (processRainCase1 == false) { %>
+                            <span id="instructions-2">
+                                In the first case we are going to assume that the rainfall level was 20mm (above the threshold set at deployment) in that location in the last x days.
+                                Click on the "Process Rainfall Data" button to discover what happens.
+                            </span>
+                            <form id="process-rainfall-form-1" action="/process-rainfall-case1" method="post">
+                                <input id="process-rainfall-input" type="text" name="rainfallLevel" value="20">
+                                <button type="submit" id="deploy-contract-button" onclick="rainfallAnimation1()"><i class="fa-solid fa-cloud-rain" style="padding-right:5%;"></i> Process Rainfall Data</button>
+                            </form>
+                            <div id="rainfall-animation-1" class="hidden">
+                                <div class="cloud-container">
+                                    <div class="cloud">
+                                        <i class="fa-solid fa-cloud"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="rain-container">
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                </div>
+                                
+                                <div class="bucket-container">
+                                    <div class="bucket-wrapper">
+                                        <div class="bucket">
+                                            <div class="water"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <% if (farmerCheckAfter1 == "none") { %>
+                                <span id="instructions-2">
+                                    The funds shouldn't be transferred, since the rainfall was above the threshold. We can confirm that by checking the contract balance:
+                                </span>
+                                <form id="deploy-contract-form" action="/check-balance-after1" method="post">
+                                    <button type="submit" id="deploy-contract-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check balance </button>
+                                </form>
+                            <% } %>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <% if (farmerCheckAfter1 != "none") { %>
+                        <div id="contract-balance">
+                            <h4>Contract Balance: <%= farmerCheckAfter1 %> <i class="fa-brands fa-ethereum"></i></h4>
+                        </div>
+                    <% } %>
+                    <div class="content-bullet">
+                        <% if (processRainCase2 == false) { %>
+                            <span id="instructions-2">
+                                In the second case we are going to assume that the rainfall level was 5mm (below the threshold set at deployment) in that location in the last x days.
+                                Click on the "Process Rainfall Data" button to discover what happens.
+                            </span>
+                            <form id="process-rainfall-form-2" action="/process-rainfall-case2" method="post">
+                                <input id="process-rainfall-input" type="text" name="rainfallLevel" value="5">
+                                <button type="submit" id="deploy-contract-button" onclick="rainfallAnimation2()"><i class="fa-solid fa-cloud-rain" style="padding-right:5%;"></i> Process Rainfall Data</button>
+                            </form>
+                            <div id="rainfall-animation-2" class="hidden">
+                                <div class="cloud-container">
+                                    <div class="cloud">
+                                        <i class="fa-solid fa-cloud"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="rain-container">
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                    <div class="rain-column"><div class="raindrop"></div></div>
+                                </div>
+                                
+                                <div class="bucket-container">
+                                    <div class="bucket-wrapper">
+                                        <div class="bucket">
+                                            <div class="water"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <span id="instructions-2">
+                                The funds should have been transferred, since the rainfall was under the threshold. We can again confirm by checking the contract balance:
+                            </span>
+                            <% if (farmerCheckAfter2 == "none") { %>
+                                <form id="deploy-contract-form" action="/check-balance-after2" method="post">
+                                    <button type="submit" id="deploy-contract-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check balance </button>
+                                </form>
+                            <% } else { %>
+                                <div id="contract-balance">
+                                    <h4>Contract Balance: <%= farmerCheckAfter2 %> <i class="fa-brands fa-ethereum"></i></h4>
+                                </div>
+                            <% } %>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        4. Withdraw premiums
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    When the policy is expired or claimed, the insurer can call the withdraw() function to get the remaining funds from the contract,
+                    which represent the premiums paid by the farmer.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function withdraw() external onlyInsurer policyExpiredOrClaimed {
+        payable(insurer).transfer(address(this).balance);
+    }                                              
+                    </code></pre>
+                </div>
+                <div class="content-bullet">
+                    <% if (withdrawn == false) { %>
+                        <span id="instructions-2">
+                            Click on the "Withdraw" button to transfer the funds to the insurer.
+                        </span>
+                        <form id="withdraw-form" action="/withdraw-funds" method="post">
+                            <button type="submit" id="deploy-contract-button" onclick="withdrawAnimation()"><i class="fa-solid fa-money-bill-transfer" style="padding-right:5%;"></i> Withdraw funds</button>
+                        </form>
+                        <div id="withdraw-animation" class="hidden">
+                            <div id="withdraw-animation-icons">
+                                <div class="contract">
+                                    <i class="fa-solid fa-file-contract" style="color:white;"></i>
+                                </div>
+                                <div class="wallet">
+                                    <i class="fa-solid fa-wallet" style="color:white;"></i>
+                                </div>
+                            </div>
+                            <p class="success-message">Withdrawal complete!</p>
+                        </div>
+                    <% } else { %>
+                        <span id="instructions-2">
+                            The contract should now have no funds left. Let' check the contract balance one last time:
+                        </span>
+                        <% if (insurerAfter == "none") { %>
+                            <form id="deploy-contract-form" action="/check-balance-after3" method="post">
+                                <button type="submit" id="deploy-contract-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check balance </button>
+                            </form>
+                        <% } else { %>
+                            <div id="contract-balance">
+                                <h4>Contract Balance: <%= insurerAfter %> <i class="fa-brands fa-ethereum"></i></h4>
+                            </div>
+                        <% } %>
+                    <% } %>
+                </div>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        5. Utility functions
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    These functions are used to check the status of the policy: getPolicyExpiry() gives out the expiration date of the policy, and 
+                    isPolicyActive() gives out a bool (true/false) weather the policy is active or not. When a policy is expired, the farmer can renew it using
+                    renewPolicy() and by paying the premium.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function getPolicyExpiry() external view returns (uint256) {
+        return policyStart + policyDuration;
+    }                    
+    
+    function isPolicyActive() external view returns (bool) {
+        return (block.timestamp < policyStart + policyDuration) && !claimProcessed;
+    }
+
+    function renewPolicy() external payable onlyFarmer {
+        require(msg.value == premium, "Incorrect premium amount");
+
+        policyStart = block.timestamp;
+        totalPremiumsPaid += msg.value;
+        claimProcessed = false;
+    }
+                    </code></pre>
+                </div>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        Full smart contract
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The WeatherInsurance smart contract provides a decentralized, automated insurance solution for farmers, 
+                    based on real-time rainfall data. It is deployed and funded by an insurer, who specifies the rainfall threshold, 
+                    policy premium, and coverage duration. The contract is activated when a farmer purchases the policy by paying the 
+                    premium, which starts the coverage period. If rainfall data—set by the insurer during the policy—is below the 
+                    predefined threshold, the farmer automatically receives a payout from the contract’s balance. 
+                    The farmer can also renew the policy by paying the premium again, which resets the policy period. 
+                    Only one farmer can hold an active policy at a time. Once the policy expires or a payout has been made, 
+                    the insurer can withdraw any remaining funds. The contract includes transparency features that allow both parties 
+                    to check the policy status, total premiums paid, and the contract’s balance. This solution offers a fast, trustless, 
+                    and efficient form of weather-based crop insurance ideal for areas affected by drought.
+                </span>
+                <div id="code-snippet-2">
+                    <pre style="overflow-x:scroll;"><code>
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.20;
+    
+    contract WeatherInsurance {
+        address public farmer;
+        address public insurer;
+    
+        uint256 public premium;
+        uint256 public payoutAmount;
+        uint256 public totalPremiumsPaid;
+    
+        uint256 public rainfallThreshold;
+        uint256 public rainfallReceived;
+    
+        uint256 public policyDuration; // Duration in seconds (e.g., 30 days = 30 * 86400)
+        uint256 public policyStart;
+    
+        bool public claimProcessed;
+    
+        constructor(
+            uint256 _threshold,
+            uint256 _premium,
+            uint256 _duration
+        ) payable {
+            require(msg.value > 0, "Insurer must fund payout amount");
+    
+            insurer = msg.sender;
+            rainfallThreshold = _threshold;
+            premium = _premium;
+            payoutAmount = msg.value;
+            policyDuration = _duration;
+        }
+    
+        modifier onlyFarmer() {
+            require(msg.sender == farmer, "Not the farmer");
+            _;
+        }
+    
+        modifier onlyInsurer() {
+            require(msg.sender == insurer, "Not the insurer");
+            _;
+        }
+    
+        modifier policyIsActive() {
+            require(block.timestamp < policyStart + policyDuration, "Policy has expired");
+            _;
+        }
+    
+        modifier policyExpiredOrClaimed() {
+            require(block.timestamp >= policyStart + policyDuration || claimProcessed, "Policy still active");
+            _;
+        }
+    
+        // Farmer purchases the policy
+        function purchasePolicy() external payable {
+            require(farmer == address(0), "Policy already purchased");
+            require(msg.value == premium, "Incorrect premium amount");
+    
+            farmer = msg.sender;
+            policyStart = block.timestamp;
+            totalPremiumsPaid += msg.value;
+        }
+    
+        // Farmer renews the policy and pays the premium
+        function renewPolicy() external payable onlyFarmer {
+            require(msg.value == premium, "Incorrect premium amount");
+    
+            policyStart = block.timestamp;
+            totalPremiumsPaid += msg.value;
+            claimProcessed = false;
+        }
+    
+        // Get data from the Oracle (fictionary in this case for demo purposes)
+        function setRainfall(uint256 _rainfall) external onlyInsurer policyIsActive {
+            require(!claimProcessed, "Claim already processed");
+    
+            rainfallReceived = _rainfall;
+            if(_rainfall > 10) {
+                claimProcessed = false;
+            } else {    
+                claimProcessed = true;
+            }
+    
+            if (_rainfall < rainfallThreshold) {
+                payable(farmer).transfer(payoutAmount);
+            }
+        }
+    
+        // Insurer can withdraw remaining funds (cumulated premiums) when the policy is expired
+        function withdraw() external onlyInsurer policyExpiredOrClaimed {
+            payable(insurer).transfer(address(this).balance);
+        }
+    
+        // For farmer: Check contract balance to verify payout funds exist
+        function getContractBalance() external view returns (uint256) {
+            return address(this).balance;
+        }
+    
+        // For insurer: See total premiums collected
+        function getTotalPremiumsPaid() external view returns (uint256) {
+            return totalPremiumsPaid;
+        }
+    
+        // For both: Check when the policy will expire
+        function getPolicyExpiry() external view returns (uint256) {
+            return policyStart + policyDuration;
+        }
+    
+        // For both: Check if the policy is active
+        function isPolicyActive() external view returns (bool) {
+            return (block.timestamp < policyStart + policyDuration) && !claimProcessed;
+        }
+    }                                                                                                           
+                    </code></pre>
+                </div>
+            </div>
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        Smart contract with real oracle interaction (example)
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    This contract simulates a more realistic case, where the requestRainfallData() function actually sends a request to the Oracle
+                    to get weather data. This structure is simplified and could be enhanced with: <br>
+                    - A Struct registering multiple famers, allowing the insurer to have a single smart contract to manage all his clients at a glance <br>
+                    - Automated functions that trigger periodically <br>
+                    - Functions for the insurer to restock the payout after deployment
+                </span>
+                <div id="code-snippet-2">
+                    <pre style="overflow-x:scroll;"><code>
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.20;
+    
+    import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+    import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+    
+    contract WeatherInsurance is ChainlinkClient {
+        using Chainlink for Chainlink.Request;
+    
+        address public farmer;
+        address public insurer;
+    
+        uint256 public premium;
+        uint256 public payoutAmount;
+        uint256 public totalPremiumsPaid;
+    
+        uint256 public rainfallThreshold;
+        uint256 public rainfallReceived;
+    
+        uint256 public policyDuration;
+        uint256 public policyStart;
+    
+        bool public claimProcessed;
+    
+        address private oracle;
+        bytes32 private jobId;
+        uint256 private fee;
+    
+        // Add Chainlink specific variables (_linkToken, _oracle, _jobId, _fee)
+        constructor(
+            uint256 _threshold,
+            uint256 _premium,
+            uint256 _duration,
+            address _linkToken,
+            address _oracle,
+            bytes32 _jobId,
+            uint256 _fee
+        ) payable {
+            require(msg.value > 0, "Insurer must fund payout amount");
+    
+            insurer = msg.sender;
+            rainfallThreshold = _threshold;
+            premium = _premium;
+            payoutAmount = msg.value;
+            policyDuration = _duration;
+    
+            setChainlinkToken(_linkToken);
+            oracle = _oracle;
+            jobId = _jobId;
+            fee = _fee;
+        }
+    
+        modifier onlyFarmer() {
+            require(msg.sender == farmer, "Not the farmer");
+            _;
+        }
+    
+        modifier onlyInsurer() {
+            require(msg.sender == insurer, "Not the insurer");
+            _;
+        }
+    
+        modifier policyIsActive() {
+            require(block.timestamp < policyStart + policyDuration, "Policy expired");
+            _;
+        }
+    
+        modifier policyExpiredOrClaimed() {
+            require(block.timestamp >= policyStart + policyDuration || claimProcessed, "Policy still active");
+            _;
+        }
+    
+        // Farmer purchases the policy
+        function purchasePolicy() external payable {
+            require(farmer == address(0), "Policy already purchased");
+            require(msg.value == premium, "Incorrect premium");
+            farmer = msg.sender;
+            policyStart = block.timestamp;
+            totalPremiumsPaid += msg.value;
+        }
+    
+        // Farmer renews the policy and pays the premium
+        function renewPolicy() external payable onlyFarmer {
+            require(msg.value == premium, "Incorrect premium amount");
+            policyStart = block.timestamp;
+            totalPremiumsPaid += msg.value;
+            claimProcessed = false;
+        }
+    
+        // Get data from the Oracle in a specific location, using APIs like "watherapi"
+        function requestRainfallData(string memory location) external onlyInsurer policyIsActive {
+            require(!claimProcessed, "Claim already processed");
+    
+            Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
+    
+            // Example: API to OpenWeatherMap or any weather provider
+            request.add("get", string(abi.encodePacked("https://api.weatherapi.com/v1/current.json?key=API_KEY&q=", location)));
+            request.add("path", "current.precip_mm"); // Adjust path to actual rainfall field
+            request.addInt("times", 100);
+    
+            sendChainlinkRequestTo(oracle, request, fee);
+        }
+    
+        // Transfer funds if rainfall level is higher that the set thereshold
+        function fulfill(bytes32 _requestId, uint256 _rainfall) public recordChainlinkFulfillment(_requestId) {
+            rainfallReceived = _rainfall;
+            claimProcessed = true;
+    
+            if (_rainfall < rainfallThreshold) {
+                payable(farmer).transfer(payoutAmount);
+            }
+        }
+    
+        // Insurer can withdraw remaining funds (cumulated premiums) when the policy is expired
+        function withdraw() external onlyInsurer policyExpiredOrClaimed {
+            payable(insurer).transfer(address(this).balance);
+        }
+    
+        // For farmer: Check contract balance to verify payout funds exist
+        function getContractBalance() external view returns (uint256) {
+            return address(this).balance;
+        }
+    
+        // For insurer: See total premiums collected
+        function getTotalPremiumsPaid() external view returns (uint256) {
+            return totalPremiumsPaid;
+        }
+    
+        // For both: Check when the policy will expire
+        function getPolicyExpiry() external view returns (uint256) {
+            return policyStart + policyDuration;
+        }
+    
+        // For both: Check if the policy is active
+        function isPolicyActive() external view returns (bool) {
+            return (block.timestamp < policyStart + policyDuration) && !claimProcessed;
+        }
+    }                                                                                                                              
+                        </code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <canvas id="fieldCanvas"></canvas>
+        <script>
+            const canvas = document.getElementById("fieldCanvas");
+            const ctx = canvas.getContext("2d");
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const grassSpacing = 10;
+            const cropProbability = 0.03;
+            const windFieldScale = 0.00008;
+            const oscillationPeriod = 2000;
+
+            let blades = [];
+            let windLines = [];
+            let lastTime = 0;
+            let totalTime = 0;
+
+            function createField() {
+                blades = [];
+                for (let y = 0; y < height; y += grassSpacing) {
+                    for (let x = 0; x < width; x += grassSpacing) {
+                        const isCrop = Math.random() < cropProbability;
+                        blades.push({
+                            baseX: x,
+                            baseY: y,
+                            height: isCrop ? 18 + Math.random() * 6 : 10 + Math.random() * 4,
+                            swayOffset: Math.random() * Math.PI * 2,
+                            isCrop
+                        });
+                    }
+                }
+
+                windLines = [];
+                for (let i = 0; i < 10; i++) {
+                    windLines.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        life: Math.random() * 200 + 100
+                    });
+                }
+            }
+
+            function drawField(currentTime) {
+                if (!lastTime) lastTime = currentTime;
+                const deltaTime = currentTime - lastTime;
+                lastTime = currentTime;
+                totalTime += deltaTime;
+
+                ctx.clearRect(0, 0, width, height);
+
+                blades.forEach(blade => {
+                    const phase = (totalTime / oscillationPeriod) * Math.PI * 2 + blade.swayOffset;
+                    const sway = Math.sin(phase) * (blade.isCrop ? 6 : 4);
+                    const x = blade.baseX + sway;
+                    const y = blade.baseY;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = blade.isCrop ? "#A1D490" : "#6BBF59";
+                    ctx.lineWidth = blade.isCrop ? 1.8 : 1.1;
+                    ctx.moveTo(blade.baseX, blade.baseY);
+                    ctx.lineTo(x, y - blade.height);
+                    ctx.stroke();
+                });
+
+                windLines.forEach(line => {
+                    const phase = (totalTime / oscillationPeriod) * Math.PI * 2;
+                    const windX = Math.cos(phase) * 1.5;
+                    const windY = Math.sin(phase) * 1.5;
+                    
+                    ctx.beginPath();
+                    ctx.strokeStyle = "rgba(220, 255, 255, 0.03)";
+                    ctx.lineWidth = 1;
+                    ctx.moveTo(line.x, line.y);
+                    ctx.lineTo(line.x + windX * 2, line.y + windY * 2);
+                    ctx.stroke();
+
+                    line.x += windX * 0.05;
+                    line.y += windY * 0.05;
+                    line.life -= 0.1;
+
+                    if (line.life <= 0 || line.x < 0 || line.y < 0 || line.x > width || line.y > height) {
+                        Object.assign(line, {
+                            x: Math.random() * width,
+                            y: Math.random() * height,
+                            life: Math.random() * 200 + 100
+                        });
+                    }
+                });
+            }
+
+            function animate(time) {
+                drawField(time);
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener("resize", () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                createField();
+            });
+
+            createField();
+            animate(0);
+        </script>
+        <script src="/script.js"></script>
+    </body>
+</html>

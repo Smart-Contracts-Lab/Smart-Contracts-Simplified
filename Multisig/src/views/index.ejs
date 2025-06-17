@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/style.css">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <link href="https://fonts.cdnfonts.com/css/futuristic" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const container = document.querySelector('.container');
+                const scrollPos = localStorage.getItem('scrollPos');
+                if (scrollPos) {
+                    container.scrollTop = parseInt(scrollPos);
+                    localStorage.removeItem('scrollPos');
+                }
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', function() {
+                        localStorage.setItem('scrollPos', container.scrollTop);
+                    });
+                });
+                updateButtonStates(<%= currentStep %>);
+            });
+
+            function updateButtonStates(step) {
+                const forms = {
+                    1: document.getElementById('deploy-contract-form'),
+                    2: document.getElementById('check-paid-count-form'),
+                    3: document.getElementById('pay-share-1'),
+                    4: document.getElementById('verify-transfer-form'),
+                    5: document.getElementById('pay-share-2'),
+                    6: document.getElementById('check-mapping-form'), 
+                    7: document.getElementById('pay-bill-form'),
+                    8: document.getElementById('check-contract-balance-form'),
+                    9: document.getElementById('withdraw-form'),
+                    10: document.getElementById('check-balance-after-form')
+                };
+                Object.values(forms).forEach(f => {
+                    if (f) {
+                        const btn = f.querySelector('button');
+                        btn.disabled = true;
+                        btn.classList.add('button-disabled');
+                    }
+                });
+                const currentForm = forms[step];
+                if (currentForm) {
+                    const btn = currentForm.querySelector('button');
+                    btn.disabled = false;
+                    btn.classList.remove('button-disabled');
+                }
+            }
+        </script>
+         <% if (alert != null) { %>
+            <script>
+                alert("<%= alertMessage %>");
+            </script>
+        <% } %>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Fair Split</h1>
+        </div>
+        <div class="container">
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>1. Group Creator Deploys Contract</h2>
+                </div>
+                <span id="instructions-1">
+                    The creator of the group deploys the contract with the address of the merchant, the addresses of all the group 
+                    participants and the total funds that the group wishes to pool. Before deployment, the constructor checks that the participants 
+                    have been added and that the funds split is equal, then it calculates the share that each participant has to transfer to the contract.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    constructor(
+        address payable _merchant,
+        address[] memory _participants,
+        uint256 _totalFunds
+    ) {
+        require(_participants.length > 0, "No participants");
+        require(_totalFunds % _participants.length == 0, "Uneven split");
+
+        merchant = _merchant;
+        participants = _participants;
+        totalFunds = _totalFunds;
+        share = _totalFunds / _participants.length;
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Here you can find the address of the merchant and all the addresses of the participants (including yours). These will be used to deploy the contract.
+                    Please specify a desired value between 600 and 1000 ETH that the group wants to reach as the total funds for the contract and click on
+                    "Deploy Contract".
+                </span>
+                <div class="content-bullet">
+                    <% if (!deployed) { %>
+                        <form class="section-form" id="deploy-contract-form" action="/deploy-contract" method="post">
+                            <div class="actors-addresses">
+                                <div class="merchant-address">
+                                    <h3>Merchant's address</h3>
+                                    <input id="address-input" type="text" name="merchant" value="<%= merchant %>">
+                                </div>
+                                <div class="participants-address">
+                                    <h3>Participants' addresses</h3>
+                                    <input id="address-input" type="text" name="participant1" value="<%= participants.participantOne %>">
+                                    <input id="address-input" type="text" name="participant2" value="<%= participants.participantTwo %>">
+                                    <input id="address-input" type="text" name="participant3" value="<%= participants.participantThree %>">
+                                    <input id="address-input" type="text" name="participant4" value="<%= participants.participantFour %>">
+                                </div>
+                            </div>
+                            <input id="address-input" type="text" name="totalFunds" placeholder="Total funds (ETH)" required>
+                            <button id="deploy-contract-button" onclick="showDeployAnimation()"><i class="fa-solid fa-file-contract" style="padding-right:5%;"></i> Deploy Contrat</button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Deployed</button>
+                    <% } %>
+                    <div id="deploy-animation" class="animation-container hidden">
+                        <div class="blockchain">
+                            <div class="block" style="--i:0"></div>
+                            <div class="block" style="--i:1"></div>
+                            <div class="block" style="--i:2"></div>
+                            <div class="block" style="--i:3"></div>
+                            <div class="contract"><i class="fa-solid fa-file-signature"></i></div>
+                        </div>
+                        <p>Deploying smart contract...</p>
+                    </div>                   
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>2. Check Paid Status</h2>
+                </div>
+                <span id="instructions-1">
+                    Everybody can now check if a member has paid. The variable (uint256) paidCount represents the number of participants that
+                    have transferred funds to the contract, while the mapping "paid" allows to check for a certain participant.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    uint256 public paidCount;
+    mapping(address => bool) public paid;
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Let's check the variable paidCount before anybody transferred the funds and see what the contract returns...
+                </span>
+                <div class="content-bullet">
+                    <% if (paidCount === null) { %>
+                        <form class="section-form" id="check-paid-count-form" action="/check-paid-count" method="post">
+                            <button id="lottery-info-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check paidCount </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-info">
+                            User transfers:     <%= paidCount %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>3. Share Transfer</h2>
+                </div>
+                <span id="instructions-1">
+                    Now that the contract is deployed, we can transfer our share of the total funds. The function payShare() first checks that the
+                    correct value was sent, that the wallet calling the function is a participant of the group and if the user has already paid. If the
+                    checks are successful, the function changes the "paid" mapping to true and increments the paidCount by one. An event is emitted with
+                    the caller's address.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function payShare() external payable {
+        require(msg.value == share, "Must send exact share");
+        require(isParticipant(msg.sender), "Not in group");
+        require(!paid[msg.sender], "Already paid");
+
+        paid[msg.sender] = true;
+        paidCount += 1;
+        emit SharePaid(msg.sender);
+
+        ...
+    }
+
+    function isParticipant(address who) public view returns (bool) {
+        for (uint256 i = 0; i < participants.length; i++) {
+            if (participants[i] == who) return true;
+        }
+        return false;
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on the "Pay Share" button to pay your portion of the required funds!
+                </span>
+                <div class="content-bullet">
+                    <% if (ownSharePaid === false) { %>
+                        <form class="section-form" id="pay-share-1" action="/pay-share-one" method="post">
+                            <button id="lottery-info-button" onclick="startPayShareAnimation()"><i class="fa-solid fa-money-bill" style="padding-right:5%;"></i> Pay Share </button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Share Paid</button>
+                    <% } %>
+                    <div class="pay-share-animation hidden">
+                        <span>Paying share...</span>
+                        <i class="fa-solid fa-user user-pay-share"></i>
+                        <i class="fab fa-ethereum ether-pay-share"></i>
+                        <i class="fas fa-file-contract contract-pay-share"></i>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>4. Check Contract Balance and paidCount</h2>
+                </div>
+                <span id="instructions-1">
+                    After paying our share, everybody can check the contract balance and the paidCount once again to verify that the funds were transferred.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function getBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Go ahead and click on "Verify Transfer" to check if the transfer was successful, you should see a contract balance equal to your share 
+                    and a paidCount of 1!
+                </span>
+                <div class="content-bullet">
+                    <% if (verifiedOne === null) { %>
+                        <form class="section-form" id="verify-transfer-form" action="/verify-transfer" method="post">
+                            <button id="lottery-info-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Verify Transfer </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-info">
+                            User transfers:     <%= verifiedOne.count %>
+                        </div>
+                        <div id="contract-info">
+                            Contract Balance:     <%= verifiedOne.balance %> <i class="fa-brands fa-ethereum"></i>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>5. Group Members pay their share</h2>
+                </div>
+                <span id="instructions-1">
+                    Now it's time for the other group members to pay, so let's connect with the other users' wallets and call payShare(). The last
+                    part of the function checks if every participant has paid their share, and if it is true, it sets the contract as funded by setting
+                    "paymentFunded" to true.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function payShare() external payable {
+        require(msg.value == share, "Must send exact share");
+        require(isParticipant(msg.sender), "Not in group");
+        require(!paid[msg.sender], "Already paid");
+
+        paid[msg.sender] = true;
+        paidCount += 1;
+        emit SharePaid(msg.sender);
+
+        if (paidCount == participants.length) {
+            emit PaymentFunded(totalFunds);
+            paymentFunded = true;
+        }
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on "Pay Shares" to make participant 2 and 3 pay their share!
+                </span>
+                <div class="content-bullet">
+                    <% if (othersSharePaid === false) { %>
+                        <form class="section-form" id="pay-share-2" action="/pay-share-two" method="post">
+                            <button id="lottery-info-button" onclick="showParticipantsAnimation()"><i class="fa-solid fa-money-bill" style="padding-right:5%;"></i> Pay Shares </button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Shares Paid</button>
+                    <% } %>
+                    <div id="animation-participants-container" style="display:none;">
+                        <i class="fa-solid fa-user icon user-2"></i>
+                        <i class="fa-solid fa-user icon user-2"></i>
+                        <i class="fa-solid fa-user icon user-2"></i>
+                        <i class="fa-solid fa-user icon user-2"></i>
+                        <i class="fa-solid fa-user icon user-2"></i>
+                        <i id="contract-2" class="fa-solid fa-file-contract"></i>
+                        <div id="text-entered-participants">Paying shares...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>Unmask the Liar</h2>
+                </div>
+                <span id="instructions-1">
+                    On the groupchat with your friends, everybody says that they paid their share, so you decide to head to the restaurant, but after checking paidCount 
+                    you notice that it says "3", this means that somebody in the group did not pay. You suspect it's John, who already owes you money, so you check if he paid his share 
+                    by giving in his wallet address.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    mapping(address => bool) public paid;
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Go ahead and click on "Check John", the fourth participant in the group, to discover if he paid or not!
+                </span>
+                <div class="content-bullet">
+                    <% if (verifiedTwo === null) { %>
+                        <form class="section-form" id="check-mapping-form" action="/check-paid-mapping" method="post">
+                            <button id="lottery-info-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check John </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-info">
+                            Did John pay?     <b><%= verifiedTwo %></b>
+                        </div>
+                    <% } %>
+                    
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>Paying the bill</h2>
+                </div>
+                <span id="instructions-1">
+                    After being discovered, John sends his share to the contract and the friends finally go out for dinner. After eating and having fun,
+                    they go to the registry to pay the bill of 500 ETH (retaurants are so expensive nowadays 🙄). The function payBill() first checks if the
+                    person calling the function is a group member, then checks if the contract was fully funded and finally transfers the funds to the merchant.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function payBill(uint256 cost) external {
+        require(isParticipant(msg.sender), "Not in group");
+        require(paymentFunded, "Payment is not fully funded");
+        totalCost = cost;
+        emit BookingConfirmed(block.timestamp);
+        merchant.transfer(totalCost);
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on "Pay Bill" to pay for the dinner in a fair and secure way!
+                </span>
+                <div class="content-bullet">
+                    <% if (billPaid === false) { %>
+                        <form class="section-form" id="pay-bill-form" action="/pay-bill" method="post">
+                            <button id="lottery-info-button" onclick="showPayBillAnimation()"><i class="fa-solid fa-file-invoice-dollar" style="padding-right:5%;"></i> Pay Bill </button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Bill paid</button>
+                    <% } %>
+                    <div id="pay-bill-animation" style="display:none;">
+                        <i id="phone" class="fa-solid fa-mobile-screen-button icon"></i>
+                        <i id="contract" class="fa-solid fa-receipt icon"></i>
+                        <div class="text-entered">Bill paid</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>Check contract balance</h2>
+                </div>
+                <span id="instructions-1">
+                    The participants can now check the remaining funds on the contract and decide what to do with the funds left. Let's have a look
+                    at the contract balance ourselves!
+                </span>
+                <div class="content-bullet">
+                    <% if (verifiedThree === null) { %>
+                        <form class="section-form" id="check-contract-balance-form" action="/check-contract-balance" method="post">
+                            <button id="lottery-info-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check Contract Balance </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-info">
+                            Contract Balance:     <%= verifiedThree %> <i class="fa-brands fa-ethereum"></i>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>Withdraw Remaining Funds</h2>
+                </div>
+                <span id="instructions-1">
+                    The friends decide to head back home, since they all have to wake up early in the morning. Since the funds in the smart contract 
+                    will not be used anymore, finalizeContract() is called, which calculates the share due to every participant, so that they can withdraw it later.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    function finalizeContract() external {
+        require(!distributionReady, "Already finalized");
+        require(isParticipant(msg.sender), "Not in group");
+        uint256 total = address(this).balance;
+        require(total > 0, "No funds to distribute");
+
+        withdrawShare = total / participants.length;
+        distributionReady   = true;
+    }
+
+    function withdrawFunds() external payable {
+        require(distributionReady, "Distribution not ready");
+        require(isParticipant(msg.sender), "Not in group");
+        require(!hasWithdrawn[msg.sender], "Share already withdrawn");
+
+        address payable sender = payable(msg.sender);
+        sender.transfer(withdrawShare);
+        hasWithdrawn[msg.sender] = true;
+    }
+                    </code></pre>
+                </div>
+                <span id="instructions-1">
+                    Click on "Withdraw Funds" to refund your share of the pooled funds! Before withdrawing the funds we are going to finalize the contract.
+                </span>
+                <div class="content-bullet">
+                    <% if (fundsWithdrawn === false) { %>
+                        <form class="section-form" id="withdraw-form" action="/withdraw-share" method="post">
+                            <button id="lottery-info-button" onclick="showWithdrawAnimation()"><i class="fa-solid fa-money-bill-transfer" style="padding-right:5%;"></i> Withdraw Funds </button>
+                        </form>
+                    <% } else { %>
+                        <button id="deployed-contract-button" disabled class="button-disabled"><i class="fa-solid fa-check" style="padding-right:5%;"></i> Withdrawn </button>
+                    <% } %>
+                    <div id="withdraw-animation" style="display:none;">
+                        <i class="fa-solid fa-user icon user-3"></i>
+                        <i class="fa-solid fa-user icon user-3"></i>
+                        <i class="fa-solid fa-user icon user-3"></i>
+                        <i class="fa-solid fa-user icon user-3"></i>
+                        <i class="fa-solid fa-user icon user-3"></i>
+                        <i id="contract-3" class="fa-solid fa-file-contract"></i>
+                        <div id="text-withdraw-funds">Withdrawing funds...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>Check contract balance</h2>
+                </div>
+                <span id="instructions-1">
+                    After all the group members have withdrawn their funds, we can check the contrat balance again:
+                </span>
+                <div class="content-bullet">
+                    <% if (verifiedFour === null) { %>
+                        <form class="section-form" id="check-balance-after-form" action="/check-balance-after" method="post">
+                            <button id="lottery-info-button"><i class="fa-solid fa-magnifying-glass" style="padding-right:5%;"></i> Check Contract Balance </button>
+                        </form>
+                    <% } else { %>
+                        <div id="contract-info">
+                            Contract Balance:     <%= verifiedFour %> <i class="fa-brands fa-ethereum"></i>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="bullet-point">
+                <div class="header-bullet">
+                    <h2>
+                        Full Smart Contract
+                    </h2>
+                </div>
+                <span id="instructions-1">
+                    The GroupBooking contract lets a predefined set of participants pool funds for a shared purchase or reservation,
+                    then settle any surplus back to the group. When it’s deployed, the merchant’s address, the list of participants,
+                    and the total amount you intend to collect are specified; it immediately calculates each person’s equal share.
+                    Participants call payShare() to deposit exactly their share into the contract; once everyone has paid, the contract is
+                    marked “funded.” Any participant can then call payBill(cost) to record the actual cost, emit a confirmation event,
+                    and forward that amount to the merchant. If the actual cost is less than what was collected, anyone in the group can call
+                    finalizeContract(), which computes each member’s refund share and readies the distribution. Finally, each participant invokes
+                    withdrawFunds() to pull down their individual refund. Utility functions let you check whether an address is in the group,
+                    view the contract’s balance, and ensure that no one over-draws or pays twice.
+                </span>
+                <div id="code-snippet">
+                    <pre style="overflow-x:scroll;"><code>
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.0;
+    
+    contract GroupBooking {
+        address payable public merchant;
+        uint256 public totalFunds;
+        uint256 public totalCost;
+        uint256 public share;
+        address[] public participants;
+        mapping(address => bool) public paid;
+        uint256 public paidCount;
+        bool public paymentFunded;
+        uint256 public withdrawShare;
+        bool public distributionReady;
+        mapping(address => bool) public hasWithdrawn;
+    
+        event SharePaid(address indexed payer);
+        event BookingConfirmed(uint256 timestamp);
+        event PaymentFunded(uint256 funds);
+    
+        constructor(
+            address payable _merchant,
+            address[] memory _participants,
+            uint256 _totalFunds
+        ) {
+            require(_participants.length > 0, "No participants");
+            require(_totalFunds % _participants.length == 0, "Uneven split");
+    
+            merchant = _merchant;
+            participants = _participants;
+            totalFunds = _totalFunds;
+            share = _totalFunds / _participants.length;
+        }
+    
+        function payShare() external payable {
+            require(msg.value == share, "Must send exact share");
+            require(isParticipant(msg.sender), "Not in group");
+            require(!paid[msg.sender], "Already paid");
+    
+            paid[msg.sender] = true;
+            paidCount += 1;
+            emit SharePaid(msg.sender);
+    
+            if (paidCount == participants.length) {
+                emit PaymentFunded(totalFunds);
+                paymentFunded = true;
+            }
+        }
+    
+        function payBill(uint256 cost) external {
+            require(isParticipant(msg.sender), "Not in group");
+            require(paymentFunded, "Payment is not fully funded");
+            totalCost = cost;
+            emit BookingConfirmed(block.timestamp);
+            merchant.transfer(totalCost);
+        }
+    
+        function isParticipant(address who) public view returns (bool) {
+            for (uint256 i = 0; i < participants.length; i++) {
+                if (participants[i] == who) return true;
+            }
+            return false;
+        }
+    
+        function finalizeContract() external {
+            require(!distributionReady, "Already finalized");
+            require(isParticipant(msg.sender), "Not in group");
+            uint256 total = address(this).balance;
+            require(total > 0, "No funds to distribute");
+    
+            withdrawShare = total / participants.length;
+            distributionReady   = true;
+        }
+    
+        function withdrawFunds() external payable {
+            require(distributionReady, "Distribution not ready");
+            require(isParticipant(msg.sender), "Not in group");
+            require(!hasWithdrawn[msg.sender], "Share already withdrawn");
+    
+            address payable sender = payable(msg.sender);
+            sender.transfer(withdrawShare);
+            hasWithdrawn[msg.sender] = true;
+        }
+    
+        function getBalance() external view returns (uint256) {
+            return address(this).balance;
+        }
+    }                                       
+                    </code></pre>
+                </div>
+            </div>
+
+        </div>
+        <canvas id="waveCanvas"></canvas>
+        <script>
+            const canvas = document.getElementById("waveCanvas");
+            const ctx = canvas.getContext("2d");
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const particleSpacing = 10;
+            const waveSpeed = 0.0008;
+
+            let particles = [];
+
+            function createParticles() {
+            particles = [];
+            for (let y = 0; y < height; y += particleSpacing) {
+                for (let x = 0; x < width; x += particleSpacing) {
+                particles.push({ baseX: x, baseY: y });
+                }
+            }
+            }
+
+            function drawParticles(time) {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "#3071b7";
+
+            const t = time * waveSpeed;
+
+            particles.forEach(p => {
+                const wave1 = Math.sin(p.baseX * 0.04 + t) * 6;
+                const wave2 = Math.cos(p.baseY * 0.05 + t * 0.8) * 6;
+                const wave3 = Math.sin((p.baseX + p.baseY) * 0.03 + t * 1.2) * 4;
+                const wave4 = Math.cos((p.baseX - p.baseY) * 0.03 + t * 0.9) * 4;
+
+                const offsetX = wave1 + wave3;
+                const offsetY = wave2 + wave4;
+
+                const x = p.baseX + offsetX;
+                const y = p.baseY + offsetY;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 1, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            }
+
+            function animate(time) {
+            drawParticles(time);
+            requestAnimationFrame(animate);
+            }
+
+            window.addEventListener("resize", () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            createParticles();
+            });
+
+            createParticles();
+            animate(0);
+        </script>
+        <script src="script.js"></script>
+    </body>
+</html>

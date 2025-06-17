@@ -1,0 +1,780 @@
+html {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    background: black;
+    overflow: hidden;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    font-family: Andale Mono, monospace;
+    font-weight: normal;
+    font-optical-sizing: auto;
+    font-style: normal;
+    overflow: hidden;
+}
+
+canvas {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 10%;
+    left: 0%;
+    display: block;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.header {
+    height: 10%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgb(10, 10, 10);
+    z-index: 1000;
+}
+
+.container {
+    height: 90vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 5%;
+    font-family: inherit;
+    z-index: 1000;
+    position: relative;
+}
+
+.bullet-point {
+    height: auto;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 5%;
+    background: none;
+    font-family: inherit;
+    color: white;
+}
+
+h1 {
+    margin: 0;
+    font-family: "Orbitron", sans-serif;
+    letter-spacing: 5px;
+    color: #3071b7;
+}
+
+h2 {
+    width: 100%;
+    margin: 2% 0% 2% 0%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-family: inherit;
+}
+
+h3 {
+    width: 60%;
+    margin: 2% 0% 2% 0%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: inherit;
+}
+
+.header-bullet {
+    height: 10vh;
+    width: 90%;
+    background: none;
+    font-family: inherit;
+}
+
+.content-bullet {
+    height: auto;
+    width: 80%;
+    background: none;
+    font-family: inherit;
+}
+
+.content-b1 {
+    height: auto;
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    background: none;
+}
+
+#address-input {
+    font-size: auto;
+    width: 60%;
+    padding: 2%;
+    border: solid 2px darkgray;
+    background: rgb(67, 67, 67);
+    color: white;
+    border-radius: 10px;
+    font-family: inherit;
+    margin-bottom: 5%;
+}
+
+#freelancer-info {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10%;
+}
+
+#client-info {
+    width: 40%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#deploy-contract-button,
+#lottery-info-button,
+#user-enter-button,
+#check-balance-button,
+#participant-enter-button,
+#deployed-contract-button,
+#draw-winner-button {
+    color: black;
+    height: 5%;
+    width: 50%;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    padding: 3%;
+    margin: 5% 0% 5% 0%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all ease 0.5s;
+    animation: fadeInButton 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+#deployed-contract-button,
+#user-entered-button,
+#participant-entered-button {
+    color: white;
+    width: 30%;
+    background: rgb(0, 172, 0);
+    justify-self: center;
+    pointer-events: none;
+}
+
+#deploy-contract-button:hover,
+#lottery-info-button:hover,
+#user-enter-button:hover,
+#check-balance-button:hover,
+#participant-enter-button:hover,
+#draw-winner-button:hover {
+    width: 40%;
+    cursor: pointer;
+}
+
+@keyframes fadeInButton {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-form {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#deploy-contract-input {
+    height: 30%;
+    width: 80%;
+    border: solid 2px darkgray;
+    background: rgb(67, 67, 67);
+    color: white;
+    border-radius: 10px;
+    margin-top: 5%;
+    padding-left: 2%;
+    font-family: inherit;
+}
+
+#instructions-1 {
+    width: 80%;
+    padding: 2% 5% 2% 5%;
+    font-size: 15px;
+    font-family: inherit;
+    text-align: justify;
+}
+
+#instructions-2 {
+    width: 80%;
+    padding: 2% 0% 2% 0%;
+    font-size: 15px;
+    font-family: inherit;
+    text-align: justify;
+}
+
+#code-snippet {
+    width: 60%;
+    height: auto;
+    border-radius: 10px;
+    background: rgb(37, 37, 37);
+    margin-bottom: 5%;
+}
+
+#code-snippet-2 {
+    width: 70%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 5%;
+}
+
+#code-snippet pre, #code-snippet-2 pre {
+    margin: 0;
+    padding: 15px;
+    color: #E8E8E8;
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.input-icon {
+    height: 100%;
+    width: 10%;
+    color: #ccc;
+    padding-left: 5%;
+    border-left: 1px solid #444;
+    margin-left: 5%;
+    cursor: pointer;
+}
+
+.input-icon:hover {
+    color: white;
+}
+
+#contract-balance {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeInButton 0.5s ease forwards;
+    opacity: 0;
+}
+
+h4 {
+    width: auto;
+    border-radius: 10px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    background: #7ED348;
+    padding: 5%;
+}
+
+h5 {
+    width: auto;
+    border-radius: 10px;
+    background: #7ED348;
+    padding: 5%;
+}
+
+#lottery-info-list {
+    height: 1.4rem;
+    padding: 5%;
+    margin: 0;
+    background: rgb(39, 39, 39);
+    border-radius: 10px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.animation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+    font-family: monospace;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.button-disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    background-color: #666 !important;
+    width: 30%;
+    justify-self: center;
+    pointer-events: none;
+}
+
+.button-disabled:hover {
+    width: 50% !important;
+    cursor: not-allowed !important;
+}
+
+#withdraw-animation {
+    position: relative;
+    width: 50%;
+    height: 240px;
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    justify-self: center;
+}
+
+#withdraw-animation-icons {
+    height: 50%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wallet {
+    color: white;
+    font-size: 4rem;
+    color: #6c757d;
+}
+
+.ethereum-coin {
+    position: absolute;
+    left: 70px;
+    top: 100px;
+    font-size: 1.8rem;
+    color: #62a9ff;
+    transform: translateY(0);
+    opacity: 0;
+}
+
+@keyframes moveEther {
+    0% {
+        left: 70px;
+        transform: translateY(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        left: calc(100% - 100px);
+        transform: translateY(0);
+        opacity: 0;
+    }
+}
+
+.success-message {
+    color: #4CAF50;
+    font-weight: bold;
+    margin-top: 20px;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#animation-enter-container {
+    position: relative;
+    width: 600px;
+    height: 200px;
+    margin: 50px auto;
+    background: rgba(37, 37, 37, 0.677);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#draw-winner-animation {
+    width: fit-content;
+    position: relative;
+    margin: 50px auto;
+    background: rgba(37, 37, 37, 0.677);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.icon {
+    position: absolute;
+    font-size: 48px;
+}
+
+#user {
+    left: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ether, .ticket {
+    position: absolute;
+    font-size: 24px;
+    opacity: 0;
+}
+
+.fly-to-contract {
+    animation: fly-to-contract 2s ease-out forwards;
+}
+
+.fly-to-user {
+    animation: fly-to-user 2s ease-out forwards;
+}
+
+@keyframes fly-to-contract {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
+@keyframes fly-to-user {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
+.text-entered {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.visible {
+    opacity: 1;
+}
+
+#animation-participants-container,
+#withdraw-animation {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    margin: 50px auto;
+    background: rgba(37, 37, 37, 0.677);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#contract-2,
+#contract-3 {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 64px;
+}
+
+.fly-to-contract-2 {
+    animation: fly-to-contract-2 2s ease-out forwards;
+}
+
+.fly-to-user-2 {
+    animation: fly-to-user-2 2s ease-out forwards;
+}
+
+@keyframes fly-to-contract-2 {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
+@keyframes fly-to-user-2 {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
+#text-drawing-winner {
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    padding: 5%;
+}
+
+.merchant-address {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.participants-address {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.animation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+    font-family: monospace;
+}
+
+.hidden {
+    display: none;
+}
+
+.blockchain {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+}
+
+.block {
+    width: 40px;
+    height: 40px;
+    background-color: #444;
+    border: 2px solid rgb(25, 25, 167);
+    border-radius: 6px;
+    animation: pulse 1.2s infinite;
+    animation-delay: calc(var(--i) * 0.2s);
+}
+
+.contract {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    background: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: moveContract 2.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+}
+
+@keyframes moveContract {
+    0% { left: 0; }
+    100% { left: 160px; }
+}
+
+.actors-addresses {
+    width: 100%;
+    border-radius: 10px;
+    background: rgba(49, 49, 49, 0.578);
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 5%;
+}
+
+#contract-info {
+    width: 30%;
+    padding: 5%;
+    border-radius: 10px;
+    background: #151515;
+    border: solid 2px #3071b7;
+    justify-self: center;
+    text-justify: center;
+    margin-top: 1rem;
+}
+
+.pay-share-animation {
+    position: relative;
+    width: 80%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 8px;
+    justify-self: center;
+}
+
+.pay-share-animation span {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.user-pay-share {
+    position: absolute;
+    left: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 48px;
+    animation: handMove 1.5s ease-out forwards;
+}
+
+.user-pay-share.animate {
+    animation: handMove 1.5s ease-out forwards;
+}
+
+@keyframes handMove {
+    to {
+        left: 20%;
+    }
+}
+
+.ether-pay-share {
+    position: absolute;
+    left: 20%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 36px;
+    opacity: 0;
+    animation: etherMove 1.5s ease-in-out forwards;
+    animation-delay: 1.5s;
+}
+
+.ether-pay-share.animate {
+    animation: etherMove 1.5s ease-in-out forwards;
+    animation-delay: 1.5s;
+}
+
+@keyframes etherMove {
+    0% {
+        opacity: 1;
+        left: 20%;
+        transform: translateY(-50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        left: calc(100% - 50px);
+        transform: translateY(-50%) scale(0.5);
+    }
+}
+
+.contract-pay-share {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 56px;
+}
+
+#animation-participants-container {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    margin: 50px auto;
+    background: rgba(37, 37, 37, 0.677);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#contract-2 {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 64px;
+}
+
+.fly-to-contract-2 {
+    animation: fly-to-contract-2 2s ease-out forwards;
+}
+
+.fly-to-user-2 {
+    animation: fly-to-user-2 2s ease-out forwards;
+}
+
+@keyframes fly-to-contract-2 {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
+@keyframes fly-to-user-2 {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
+#text-entered-participants,
+#text-withdraw-funds {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    transform: translateX(-50%);
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    transition: opacity 0.5s ease;
+}
+
+.visible {
+    opacity: 1;
+}
+
+#pay-bill-animation {
+    position: relative;
+    width: 600px;
+    height: 200px;
+    margin: 50px auto;
+    background: rgba(37, 37, 37, 0.677);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#phone {
+    left: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#contract {
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.fly-to-contract {
+    animation: fly-to-contract 2s ease-out forwards;
+}
+
+@keyframes fly-to-contract {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
